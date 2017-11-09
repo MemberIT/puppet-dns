@@ -164,6 +164,7 @@
 #   Defaults to `master`.
 #
 define dns::zone (
+  $zonename = '',
   $soa = $::fqdn,
   $soa_email = "root.${::fqdn}",
   $zone_ttl = '604800',
@@ -191,6 +192,7 @@ define dns::zone (
 
   $cfg_dir = $dns::server::params::cfg_dir
 
+  validate_string($zonename)
   validate_array($allow_transfer)
   validate_array($allow_forwarder)
   if !member(['first', 'only'], $forward_policy) {
@@ -204,10 +206,14 @@ define dns::zone (
     fail("The zone_notify must be ${valid_zone_notify}")
   }
 
-  $zone = $reverse ? {
-    'reverse' => join(reverse(split("arpa.in-addr.${name}", '\.')), '.'),
-    true      => "${name}.in-addr.arpa",
-    default   => $name
+  if empty($zonename) {
+    $zone = $reverse ? {
+      'reverse' => join(reverse(split("arpa.in-addr.${name}", '\.')), '.'),
+      true      => "${name}.in-addr.arpa",
+      default   => $name
+    }
+  } else {
+    $zone = $zonename
   }
 
   validate_string($zone_type)
@@ -252,7 +258,7 @@ define dns::zone (
       mode    => '0644',
       replace => $zone_replace,
       require => Class['dns::server'],
-      notify  => Exec["bump-${zone}-serial"]
+      notify  => Exec["bump-${name}-serial"]
     }
     concat::fragment{"db.${name}.soa":
       target  => $zone_file_stage,
@@ -268,7 +274,7 @@ define dns::zone (
       false   => inline_template('<%= Time.now.to_i %>'),
       default => $serial
     }
-    exec { "bump-${zone}-serial":
+    exec { "bump-${name}-serial":
       command     => "sed '8s/_SERIAL_/${zone_serial}/' ${zone_file_stage} > ${zone_file}",
       path        => ['/bin', '/sbin', '/usr/bin', '/usr/sbin'],
       refreshonly => true,

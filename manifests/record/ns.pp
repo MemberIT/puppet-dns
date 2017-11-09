@@ -16,11 +16,11 @@ define dns::record::ns (
   validate_string($data)
   validate_string($host)
 
-  if !is_domain_name($zone) or $zone =~ /^[0-9\.]+$/ {
+  if (!is_domain_name($zone) and $zone !~ /(\.|@)[A-Za-z]+$/) or $zone =~ /^[0-9\.]+$/ {
     fail("Define[dns::record::ns]: NS zone ${zone} must be a valid domain name.")
   }
   # Highest label (top-level domain) must be alphabetic
-  if $zone =~ /\./ and $zone !~ /\.[A-Za-z]+$/ {
+  if $zone =~ /\./ and $zone !~ /(\.|@)[A-Za-z]+$/ {
     fail("Define[dns::record::ns]: NS zone ${zone} must be a valid domain name.")
   }
   # RR data must be a valid hostname, not entirely numeric values

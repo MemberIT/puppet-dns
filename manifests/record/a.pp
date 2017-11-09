@@ -22,17 +22,18 @@ define dns::record::a (
     data_dir => $data_dir,
   }
 
+  $ptr_zone = regsubst($zone, '^(\S+)@\S+$', '\1')
   if $ptr == 'all' {
     dns::record::ptr::by_ip { $data:
       host     => $host,
-      zone     => $zone,
+      zone     => $ptr_zone,
       data_dir => $data_dir,
     }
   } elsif $ptr == 'first' or str2bool($ptr) {
     $ip = inline_template('<%= @data.kind_of?(Array) ? @data.first : @data %>')
     dns::record::ptr::by_ip { $ip:
       host     => $host,
-      zone     => $zone,
+      zone     => $ptr_zone,
       data_dir => $data_dir,
     }
   }
