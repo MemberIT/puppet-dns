@@ -14,16 +14,26 @@ define dns::record::srv (
   $data_dir = $::dns::server::config::data_dir,
 ) {
 
-  $alias = "${service}:${proto}@${target}:${port},${pri},${weight},SRV,${zone}"
+  if is_string($zone) {
+    $convert_zone = [ $zone ]
+  } else {
+    if is_array($zone) {
+      $convert_zone = unique($zone)
+    } else {
+      fail("'zone' must be string or array!")
+    }
+  }
 
-  $host = "_${service}._${proto}.${zone}."
-
-  dns::record { $alias:
-    zone     => $zone,
-    host     => $host,
-    ttl      => $ttl,
-    record   => 'SRV',
-    data     => "${pri}\t${weight}\t${port}\t${target}",
-    data_dir => $data_dir,
+  $convert_zone.each |String $zone| {
+    $alias = "${service}:${proto}@${target}:${port},${pri},${weight},SRV,${zone}"
+    $host = "_${service}._${proto}.${zone}."
+    dns::record { $alias:
+      zone     => $zone,
+      host     => $host,
+      ttl      => $ttl,
+      record   => 'SRV',
+      data     => "${pri}\t${weight}\t${port}\t${target}",
+      data_dir => $data_dir,
+    }
   }
 }

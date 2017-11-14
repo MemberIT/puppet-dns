@@ -10,14 +10,25 @@ define dns::record::ptr (
   $data_dir = $::dns::server::config::data_dir,
 ) {
 
-  $alias = "${name},PTR,${zone}"
+  if is_string($zone) {
+    $convert_zone = [ $zone ]
+  } else {
+    if is_array($zone) {
+      $convert_zone = unique($zone)
+    } else {
+      fail("'zone' must be string or array!")
+    }
+  }
 
-  dns::record { $alias:
-    zone     => $zone,
-    host     => $host,
-    ttl      => $ttl,
-    record   => 'PTR',
-    data     => "${data}.",
-    data_dir => $data_dir,
+  $convert_zone.each |String $zone| {
+    $alias = "${name},PTR,${zone}"
+    dns::record { $alias:
+      zone     => $zone,
+      host     => $host,
+      ttl      => $ttl,
+      record   => 'PTR',
+      data     => "${data}.",
+      data_dir => $data_dir,
+    }
   }
 }
