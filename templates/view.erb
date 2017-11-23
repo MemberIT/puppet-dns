@@ -21,7 +21,15 @@ view <%= @viewname %> {
     <%= v.join(";\n    ")%>;
   };
     <%- else -%>
+      <%- if v.is_a? Hash -%>
+  <%= k %> {
+        <%- v.each do |k, v| -%>
+    <%= k %> <%= v %>;
+        <%- end -%>
+  };
+      <%- else -%>
   <%= k %> <%= v %>;
+      <%- end -%>
     <%- end -%>
   <%- end -%>
 <%- end -%>
