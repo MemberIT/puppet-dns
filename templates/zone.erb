@@ -19,6 +19,15 @@ zone "<%= @zone %>" {
 <%- else -%>
     masters { <%= @slave_masters %>;};
 <%- end -%>
+<% if @zone_type == 'slave' -%>
+    <%- if @allow_transfer.is_a?(Array) and @allow_transfer.size != 0 -%>
+        allow-transfer {
+        <%- @allow_transfer.each do |ip| -%>
+            <%= ip %>;
+        <%- end -%>
+        };
+    <%- end -%>
+<%- end -%>
 <% elsif @zone_type == 'master' -%>
     <%- if @allow_transfer.is_a?(Array) and @allow_transfer.size != 0 -%>
         allow-transfer {
