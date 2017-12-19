@@ -26,7 +26,8 @@ define dns::record::srv (
 
   $convert_zone.each |String $zone| {
     $alias = "${service}:${proto}@${target}:${port},${pri},${weight},SRV,${zone}"
-    $host = "_${service}._${proto}.${zone}."
+    $host_zone = regsubst($zone, '^(\S+)@\S+$', '\1')
+    $host = "_${service}._${proto}.${host_zone}."
     dns::record { $alias:
       zone     => $zone,
       host     => $host,
